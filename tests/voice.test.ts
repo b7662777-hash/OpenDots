@@ -17,6 +17,7 @@ function fixture() {
     workspace.close();
   });
   const config: PlatformConfig = {
+    aiProvider: 'openai',
     baseUrl: 'https://example.com',
     voiceKey: 'test-secret',
     voiceModel: 'voice-model',

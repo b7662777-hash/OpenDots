@@ -64,6 +64,7 @@ it('finishes an interactive turn when Composio startup stalls', async () => {
     workspace,
     {
       intelligenceKey: 'fixture',
+      aiProvider: 'openai',
       apiKey: 'fixture',
       model: 'custom-model',
       composioApiKey: 'fixture',
@@ -113,6 +114,7 @@ it('does not start the inner agent after Composio startup is cancelled', async (
     workspace,
     {
       intelligenceKey: 'fixture',
+      aiProvider: 'openai',
       apiKey: 'fixture',
       model: 'custom-model',
       composioApiKey: 'fixture',

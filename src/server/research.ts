@@ -88,7 +88,7 @@ export async function research(
   }
   if (!configured(config))
     throw new Error(
-      'Live mode is not configured. Set OPENAI_API_KEY and OPENAI_MODEL; browser research also needs BROWSER_URL and BROWSER_SECRET. Research must not be disabled.',
+      'Live mode is not configured. Set the model API key and model name for your selected AI_PROVIDER; browser research also needs BROWSER_URL and BROWSER_SECRET. Research must not be disabled.',
     );
   let pages: WebSource[];
   const limitations: string[] = [];

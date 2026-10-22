@@ -77,6 +77,7 @@ it('TanStack AI streams with the verified skill catalog and authorized server to
       workspace,
       {
         intelligenceKey: 'fixture',
+        aiProvider: 'openai',
         apiKey: 'fixture',
         model: 'fixture',
         baseUrl: 'https://unused.invalid',
@@ -149,6 +150,7 @@ it('native skill delivery fails the invocation before contacting the model when 
       workspace,
       {
         intelligenceKey: 'fixture',
+        aiProvider: 'openai',
         apiKey: 'fixture',
         model: 'fixture',
         baseUrl: 'https://unused.invalid',

@@ -18,6 +18,7 @@ vi.mock('@composio/core', () => ({
 
 const config: PlatformConfig = {
   composioApiKey: 'composio-fixture',
+  aiProvider: 'openai',
   baseUrl: 'https://example.com',
   runtimeUrl: '',
   voiceName: 'marin',

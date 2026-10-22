@@ -11,6 +11,7 @@ import { Store } from '../src/server/store.js';
 import { WorkspaceStore } from '../src/server/workspace.js';
 
 const configured: PlatformConfig = {
+  aiProvider: 'openai',
   apiKey: 'fixture',
   model: 'fixture',
   baseUrl: 'https://example.com',

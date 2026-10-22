@@ -25,6 +25,7 @@ function fixture() {
     workspace,
     {
       intelligenceKey: 'fixture',
+      aiProvider: 'openai',
       apiKey: 'fixture',
       model: 'custom-model',
       baseUrl: 'https://unused.invalid/v1',

@@ -67,23 +67,86 @@ For this preview, run OpenDots directly on your Mac with `npm run dev`; Intellig
 
 Edit `.env` on the server and restart after changes:
 
-| Variable                                             | Purpose                                                                |
-| ---------------------------------------------------- | ---------------------------------------------------------------------- |
-| `INTELLIGENCE_API_KEY`                               | Project credential for conversation persistence                        |
-| `INTELLIGENCE_API_URL`                               | API endpoint override for your Intelligence deployment                 |
-| `INTELLIGENCE_GATEWAY_WS_URL`, `INTELLIGENCE_WS_URL` | Gateway WebSocket override (CLI name preferred; legacy name supported) |
-| `OPENAI_API_KEY`, `OPENAI_MODEL`                     | Model credential and model identifier                                  |
-| `OPENAI_BASE_URL`                                    | Compatible model API endpoint                                          |
-| `OWNER_ID`                                           | Stable identity used for this deployment's conversations               |
-| `DATABASE_PATH`                                      | SQLite file containing pages, workspace and work metadata              |
-| `OWNER_TOKEN`                                        | Application access token; required for external bindings               |
-| `APP_ORIGIN`                                         | Comma-separated exact browser origins for a proxy or custom domain     |
+| Variable                                             | Purpose                                                                     |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| `INTELLIGENCE_API_KEY`                               | Project credential for conversation persistence                             |
+| `INTELLIGENCE_API_URL`                               | API endpoint override for your Intelligence deployment                      |
+| `INTELLIGENCE_GATEWAY_WS_URL`, `INTELLIGENCE_WS_URL` | Gateway WebSocket override (CLI name preferred; legacy name supported)      |
+| `AI_PROVIDER`                                        | Selected model provider: `gemini` or `openai` (default: `openai`)           |
+| `GEMINI_API_KEY`                                     | Google Gemini API key (required when `AI_PROVIDER=gemini`)                  |
+| `GEMINI_MODEL`                                       | Gemini model ID, e.g. `gemini-2.5-flash` (recommended default)              |
+| `OPENAI_API_KEY`                                     | OpenAI API key (required when `AI_PROVIDER=openai`)                         |
+| `OPENAI_MODEL`                                       | OpenAI model identifier, e.g. `gpt-4o`                                      |
+| `OPENAI_BASE_URL`                                    | OpenAI-compatible model API endpoint (default: `https://api.openai.com/v1`) |
+| `OWNER_ID`                                           | Stable identity used for this deployment's conversations                    |
+| `DATABASE_PATH`                                      | SQLite file containing pages, workspace and work metadata                   |
+| `OWNER_TOKEN`                                        | Application access token; required for external bindings (24+ chars)        |
+| `APP_ORIGIN`                                         | Comma-separated exact browser origins for a proxy or custom domain          |
 
 `npx copilotkit project select` deletes an `INTELLIGENCE_API_KEY` line and writes the same credential as `CPK_INTELLIGENCE_API_KEY`. The server reads either name. A non-empty `CPK_INTELLIGENCE_API_KEY` takes precedence over `INTELLIGENCE_API_KEY`.
 
 A non-empty `INTELLIGENCE_GATEWAY_WS_URL` takes precedence over `INTELLIGENCE_WS_URL`. Without either WebSocket override, OpenDots uses the hosted gateway. Set both the API and gateway endpoints when connecting a self-hosted deployment.
 
 The model environment variable names follow the configured provider adapter. Provider credentials belong in `.env`, not client-side variables or source code. Conversation history lives in the configured Intelligence project; copying the SQLite file alone does not back up that history.
+
+### Google Gemini configuration
+
+To use Google Gemini as your AI provider instead of OpenAI:
+
+1. Obtain an API key from [Google AI Studio](https://aistudio.google.com/apikey).
+2. Configure `.env` on the server:
+   ```dotenv
+   AI_PROVIDER=gemini
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-2.5-flash
+   ```
+3. Restart OpenDots (`npm run dev` or production service).
+
+Supported Gemini models include:
+
+- `gemini-2.5-flash` (recommended default: fast, capable, supports function calling and streaming)
+- `gemini-2.5-pro` (complex reasoning and extended context)
+- `gemini-2.0-flash` (low-latency generation)
+
+OpenDots routes Gemini requests through Google's official OpenAI-compatible endpoint:
+`https://generativelanguage.googleapis.com/v1beta/openai/`
+
+When `AI_PROVIDER=gemini` is selected, OpenDots validates `GEMINI_API_KEY` and `GEMINI_MODEL` and does not demand `OPENAI_API_KEY` or `OPENAI_MODEL`. Server-side credentials are never sent to the client, logged, or exposed in error messages.
+
+### Voroa production deployment
+
+When deploying OpenDots as a Web Service on Voroa:
+
+1. **Repository & Branch**: Connect your GitHub repository (`OpenDots`) and select the `main` branch for automatic deployments.
+2. **Runtime**: Node.js 24 (or `>=24.0.0`).
+3. **Build Command**: `npm run build`
+4. **Start Command**: `npm start`
+5. **Environment Variables**:
+   - `HOST=0.0.0.0` (required for external routing)
+   - `PORT=4310` (or platform-assigned port, read via `process.env.PORT`)
+   - `OWNER_TOKEN=<random 24+ character secret>` (mandatory for security whenever `HOST` is external; protects API endpoints from unauthorized access)
+   - `DATABASE_PATH=/data/opendots.sqlite` (configure an attached persistent volume mounted at `/data` so SQLite page content and settings survive container redeployment)
+   - `AI_PROVIDER=gemini`
+   - `GEMINI_API_KEY=<your-google-ai-studio-key>`
+   - `GEMINI_MODEL=gemini-2.5-flash`
+   - `CPK_INTELLIGENCE_API_KEY=<your-copilotkit-intelligence-key>`
+   - `CPK_TELEMETRY_ID=<your-telemetry-id>`
+   - `OWNER_ID=opendots-owner`
+   - `APP_ORIGIN=https://your-app-domain.voroa.app` (your production HTTPS URL)
+6. **Persistent Storage Note**: SQLite stores pages, workspace metadata, and thread bindings. Without an attached persistent volume mounted at `DATABASE_PATH`, local database data will not survive service restarts or redeployments. Conversation history is persisted separately in CopilotKit Intelligence.
+7. **Service Boundaries**:
+   - Text chat, specialist Dots, Space pages, and web research work with Gemini and CopilotKit Intelligence.
+   - Realtime voice calls require OpenAI Realtime API (`VOICE_API_KEY`, `VOICE_MODEL`); Gemini text chat does not provide speech compute.
+   - Persistent computers require separate OpenBot supervisor services.
+   - Slack integration requires Channels SDK configuration in CopilotKit Intelligence.
+
+### Troubleshooting Gemini configuration
+
+- **Setup dialog reports missing keys**: Ensure `AI_PROVIDER=gemini` and both `GEMINI_API_KEY` and `GEMINI_MODEL` are set in the server environment, then restart the server.
+- **HTTP 400 / 401 / 403 (Authentication error)**: Verify your API key at [Google AI Studio](https://aistudio.google.com/apikey). Ensure the key has permissions for the Gemini API and has no trailing whitespace.
+- **HTTP 404 (Model not found)**: Verify the model name in `GEMINI_MODEL`. Use verified model IDs such as `gemini-2.5-flash` or `gemini-2.5-pro`.
+- **HTTP 429 (Rate limit / Quota exceeded)**: Google AI Studio free-tier keys have per-minute request limits. Check your quota in the Google AI Studio console or upgrade to a paid tier if needed.
+- **External binding error on startup**: If `HOST` is set to `0.0.0.0`, OpenDots requires an `OWNER_TOKEN` of at least 24 characters. Generate a secure secret and set `OWNER_TOKEN` in the environment.
 
 ## Pages and page conversations
 

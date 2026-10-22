@@ -6,6 +6,7 @@ import {
 } from '../src/server/platform-config.js';
 const config: PlatformConfig = {
   intelligenceKey: 'fixture',
+  aiProvider: 'openai',
   apiKey: 'fixture',
   model: 'fixture',
   baseUrl: 'https://example.com',

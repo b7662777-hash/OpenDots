@@ -146,7 +146,7 @@ flowchart TB
   Channels --> Agents[Specialist compute agents]
   Runtime --> Agents
   Agents --> AI[TanStack AI]
-  AI --> Provider[OpenAI-compatible model provider]
+  AI --> Provider["Model provider: Google Gemini or OpenAI"]
   Runtime <--> Intelligence["Intelligence / Threads"]
   Channels <--> Intelligence
   Web <--> Speech[Realtime speech]
@@ -183,7 +183,25 @@ npx copilotkit@latest login
 npx copilotkit@latest project select
 ```
 
-`project select` writes a project key to `.env` as `CPK_INTELLIGENCE_API_KEY`. Keep the generated `CPK_TELEMETRY_ID` with that key so SDK usage can resolve to your Intelligence account. Then add `OPENAI_API_KEY` and `OPENAI_MODEL` to `.env` and restart `npm run dev`.
+`project select` writes a project key to `.env` as `CPK_INTELLIGENCE_API_KEY`. Keep the generated `CPK_TELEMETRY_ID` with that key so SDK usage can resolve to your Intelligence account.
+
+Then configure your model provider in `.env` and restart `npm run dev`.
+
+For **Google Gemini** (get a key from [Google AI Studio](https://aistudio.google.com/apikey)):
+
+```sh
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+For **OpenAI**:
+
+```sh
+AI_PROVIDER=openai
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-4o
+```
 
 Do not run `copilotkit onboard` in this folder. OpenDots already contains its CopilotKit integration, and onboarding adds a second, generic one.
 

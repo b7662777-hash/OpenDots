@@ -1,5 +1,10 @@
 import type { WebConfig } from './parallel.js';
 import type { SetupStatus } from '../shared/types.js';
+import {
+  missingProviderLabels,
+  type AIProvider,
+  type ProviderCredentials,
+} from './provider-config.js';
 
 // `copilotkit project select` writes the CLI name and deletes the template name.
 const INTELLIGENCE_API_KEY_ENV_NAMES = [
@@ -53,6 +58,8 @@ export interface PlatformConfig extends WebConfig {
   intelligenceKey?: string;
   intelligenceApiUrl?: string;
   intelligenceWsUrl?: string;
+  /** The resolved AI provider: 'openai' or 'gemini'. Defaults to 'openai'. */
+  aiProvider?: AIProvider;
   model?: string;
   apiKey?: string;
   baseUrl: string;
@@ -79,10 +86,16 @@ export function setupStatus(
   slack = 'not_configured',
   activationFailed = false,
 ): SetupStatus {
+  const providerCredentials: ProviderCredentials = {
+    provider: config.aiProvider ?? 'openai',
+    apiKey: config.apiKey,
+    model: config.model,
+    baseUrl: config.baseUrl,
+  };
+  const providerMissing = missingProviderLabels(providerCredentials);
   const missing = [
     !config.intelligenceKey && INTELLIGENCE_KEY_MISSING_LABEL,
-    !config.apiKey && 'OPENAI_API_KEY',
-    !config.model && 'OPENAI_MODEL',
+    ...providerMissing,
   ].filter((item): item is string => !!item);
   const declaredSlack = !!(
     config.slackChannel &&

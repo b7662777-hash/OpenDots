@@ -110,6 +110,7 @@ function fixture(channel = true) {
     workspace,
     {
       intelligenceKey: 'fixture',
+      aiProvider: 'openai',
       apiKey: 'fixture',
       model: 'fixture',
       baseUrl: 'https://unused.invalid',
